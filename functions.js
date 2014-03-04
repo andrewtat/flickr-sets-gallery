@@ -9,6 +9,7 @@ $(document).ready(function() {
 		$.each(data.photosets.photoset, function() {
 			var photoset_id = this.id;
 			var photoset_title = this.title._content;
+			var photosetURL = "http://flickr.com/photos/aftfalcodog/sets/" + photoset_id; // Later change this to generated pages
 
 			// Get photos fom photoset ID
 			var flickrPhotoSetPhotosAPI = "http://api.flickr.com/services/rest/?method=flickr.photosets.getPhotos&api_key=" + API_key + "&photoset_id=" + photoset_id + "&format=json&nojsoncallback=1";
@@ -18,16 +19,19 @@ $(document).ready(function() {
 						var photo_id = this.id;
 						var flickrPhotoAPI = "http://api.flickr.com/services/rest/?method=flickr.photos.getSizes&api_key=" + API_key + "&photo_id=" + photo_id + "&format=json&nojsoncallback=1";
 						var photo = $.getJSON(flickrPhotoAPI, function(data3) {
-							var photo_url = data3.sizes.size[5].source;
+							var photo_url = data3.sizes.size[5].source;													
 							var marginWidth = calculateMarginWidth();
+							$("#sets-gallery").css("margin", marginWidth);							
 
+							var set = $('<a>', { "href":photosetURL });
 							var image_container = $('<div>', { "class":"event-container", "style":"margin: " + marginWidth + "px;" });
-							var description = $('<h2>', { "class":"event-description", "style":"position: absolute; top: 175px; left: 10px; width: 100%; color: #FFF; font-family: Helvetica; font-size: 1.2em;" });
+							var description = $('<h2>', { "class":"event-description", "style":"position: absolute; top: 175px; left: 10px; width: 90%; color: #FFF; font-family: Helvetica; font-size: 1.2em;" });
 							description.append(photoset_title);
 							var image = $('<img>', { "id":photoset_title , "src":photo_url, "position":"relative", "width":"100%" });
 							image_container.append(image.centerImage());
 							image_container.append(description);
-							$("#sets-gallery").append(image_container);
+							set.append(image_container);
+							$("#sets-gallery").append(set);
 						});
 					}
 				});
@@ -39,14 +43,19 @@ $(document).ready(function() {
 
 	// Resizes the event containers
 	$(window).resize(function() {
-		// $(".event-container").css();
+		setEventContainerWidths();
 	});
 
 });
 
 function calculateMarginWidth() {
-	var window_width = $(window).width();
-	var numEventContainers = Math.floor(window_width / 250);
-	console.log(numEventContainers);
-	return (window_width - numEventContainers * 250) / (3 * numEventContainers);	
+	var windowWidth = $(window).width();
+	var numEventContainers = Math.floor(windowWidth / 250);
+	return (windowWidth - numEventContainers * 250) / (2 * (numEventContainers + 1));	
+}
+
+function setEventContainerWidths() {
+	var marginWidth = calculateMarginWidth();
+	$("#sets-gallery").css("margin", marginWidth);
+	$(".event-container").css("margin", marginWidth); // Do I need .each()? Do I need to edit event descriptions? (Yes, for cases where I have to shrink container size)
 }
